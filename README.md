@@ -1,4 +1,4 @@
-# Piano Tiles
+# Piano Speed Challenge
 
 Piano Tiles es un juego de ritmo clásico con opciones de velocidad ajustables disponibles desde el inicio. Disfruta de una experiencia de juego sin anuncios y liviana en este entretenido y desafiante juego musical.
 
