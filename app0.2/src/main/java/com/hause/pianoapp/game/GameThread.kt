@@ -3,16 +3,26 @@ package com.tayyar.tiletap.game
 import android.graphics.Canvas
 import android.view.SurfaceHolder
 
-
+/**
+ * GameThread es el hilo que maneja el ciclo de dibujo del juego.
+ * Se encarga de actualizar y renderizar el contenido del juego a una velocidad constante.
+ */
 class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView: GameView) : Thread() {
     private var running: Boolean = false
+    private val targetFPS = 60 // frames per second, la tasa a la que se quiere refrescar el Canvas
 
-    private val targetFPS = 60 // frames per second, the rate at which you would like to refresh the Canvas
-
+    /**
+     * setRunning establece el estado de ejecución del hilo.
+     * @param isRunning un booleano que indica si el hilo debe estar en ejecución.
+     */
     fun setRunning(isRunning: Boolean) {
         this.running = isRunning
     }
 
+    /**
+     * run es el método principal del hilo. Maneja el ciclo de dibujo del juego,
+     * que incluye bloquear el Canvas, dibujar en él y desbloquearlo.
+     */
     override fun run() {
         var startTime: Long
         var timeMillis: Long
@@ -25,7 +35,7 @@ class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView:
                 startTime = System.nanoTime()
                 canvas = null
 
-                // half a second delay before game starts
+                // Medio segundo de retraso antes de que comience el juego
                 if (System.nanoTime() - firstTime < 500000000) {
                     canvas = this.surfaceHolder.lockCanvas()
                     synchronized(surfaceHolder) {
@@ -37,7 +47,7 @@ class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView:
                 }
 
                 try {
-                    // locking the canvas allows us to draw on to it
+                    // Bloquear el canvas permite dibujar en él
                     canvas = this.surfaceHolder.lockCanvas()
                     synchronized(surfaceHolder) {
                         this.gameView.draw(canvas!!)
