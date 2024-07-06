@@ -18,14 +18,15 @@ import com.tayyar.tiletap.R
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
-
+/**
+ * GameView es la vista principal del juego donde se dibujan y manejan las tiles.
+ * Maneja la lógica del juego y la interacción del usuario.
+ */
 class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback {
 
     private val thread: GameThread
-
     private var tiles = LinkedList<Tile>()
     private var tempTiles = CopyOnWriteArrayList<Tile>()
-
     private var vibrator: Vibrator? = null
 
     private var blackPaint = Paint()
@@ -58,41 +59,38 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
     private var frameNo = 0
 
     init {
-
-        // add callback
+        // Agrega el callback del SurfaceHolder
         holder.addCallback(this)
 
-        // instantiate the game thread
+        // Instancia el hilo del juego
         thread = GameThread(holder, this)
 
         score = 0
-
         row = (0..3).random()
 
-        //game objects
+        // Objetos del juego
         tiles.add(Tile(blackPaint, grayPaint, redPaint, row))
-
         lastRow = row
 
-        // color of the tiles
+        // Colores de las tiles
         blackPaint.color = Color.BLACK
         grayPaint.color = Color.GRAY
         redPaint.color = Color.RED
         scorePaint.color = Color.CYAN
-
         scorePaint.textSize = scoreSize
 
+        // Carga los sonidos si la música está habilitada
         if (music && soundPool == null) {
             soundPool = SoundPool(20, AudioManager.STREAM_MUSIC, 0)
             if (failSound == null) {
                 failSound = soundPool?.load(context, R.raw.failsound, 1)
             }
-
             if (tileSound == null) {
                 tileSound = soundPool?.load(context, R.raw.a, 1)
             }
         }
 
+        // Configura el vibrador si está habilitado
         if (vibration) {
             vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
@@ -107,29 +105,43 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         var initialSpeed = 30
     }
 
-
+    /**
+     * surfaceCreated es llamado cuando el SurfaceView está listo para ser utilizado.
+     * Inicia el hilo del juego.
+     */
     override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
         thread.setRunning(true)
         if (!started) {
-            // start the game thread
+            // Inicia el hilo del juego
             thread.start()
             started = true
         }
     }
 
     override fun surfaceChanged(surfaceHolder: SurfaceHolder, i: Int, i1: Int, i2: Int) {
+        // No se necesita implementar
     }
 
+    /**
+     * surfaceDestroyed es llamado cuando el SurfaceView está siendo destruido.
+     * Guarda la puntuación si es un récord y detiene el hilo del juego.
+     */
     override fun surfaceDestroyed(p0: SurfaceHolder) {
         saveIfHighScore(initialSpeed, score)
         thread.setRunning(false)
     }
 
+    /**
+     * destroy libera los recursos del SoundPool.
+     */
     fun destroy() {
         soundPool?.release()
         soundPool = null
     }
 
+    /**
+     * restart reinicia el estado del juego para comenzar de nuevo.
+     */
     fun restart() {
         if (playingSound != null) {
             soundPool?.stop(playingSound!!)
@@ -140,7 +152,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         score = 0
         tappedWrongTile = -1
         row = (0..3).random()
-        //game objects
+        // Objetos del juego
         tiles.add(Tile(blackPaint, grayPaint, redPaint, row))
         lastRow = row
         gameOver = false
@@ -148,7 +160,9 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         thread.setRunning(true)
     }
 
-    /** Save the score to shared preferences if it is greater than the best score */
+    /**
+     * saveIfHighScore guarda la puntuación si es mayor que la mejor puntuación.
+     */
     private fun saveIfHighScore(speed: Int, score: Int) {
         val sharedPref = context?.getSharedPreferences(
             context.getString(R.string.shared_preferences_name),
@@ -163,13 +177,14 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         }
     }
 
-    /** Everything that has to be drawn on Canvas */
+    /**
+     * draw dibuja todos los elementos del juego en el Canvas.
+     */
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-
         frameNo++
 
-        // stop the game
+        // Detener el juego
         if (false) {
             playingSound = soundPool?.play(failSound!!, 1f, 1f, 0, 0, 1f)
             Tile.speed = 0.0
@@ -181,21 +196,20 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
         drawLines(canvas)
 
-        // remove the tiles that are out of screen from tiles list
+        // Eliminar las tiles que están fuera de la pantalla
         if (tiles.first.outOfScreen) {
             tiles.poll()
         }
-        // draw new tiles when last one is on the screen
+        // Dibujar nuevas tiles cuando la última está en la pantalla
         if (tiles.last.startY >= 0) {
             do {
                 row = (0..3).random()
             } while (row == lastRow)
 
             tiles.add(Tile(blackPaint, grayPaint, redPaint, row))
-
             lastRow = row
         }
-        // update and draw all tiles
+        // Actualizar y dibujar todas las tiles
         for (tile in tiles) {
             tile.update(frameNo)
             tile.draw(canvas)
@@ -203,7 +217,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
                 gameOver = true
             }
         }
-        // draw red tile if pressed the wrong tile
+        // Dibujar tile roja si se presionó la tile equivocada
         when (tappedWrongTile) {
             0 -> canvas.drawRect(Rect(0, startY, screenWidth / 4, endY), redPaint)
             1 -> canvas.drawRect(Rect(screenWidth / 4, startY, screenWidth / 2, endY), redPaint)
@@ -213,11 +227,14 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         drawScore(canvas)
     }
 
+    /**
+     * drawLines dibuja las líneas de alineación en el Canvas.
+     */
     fun drawLines(canvas: Canvas) {
-        // paint the background
+        // Pintar el fondo
         canvas.drawColor(backGroundColor)
 
-        // alignment lines
+        // Líneas de alineación
         canvas.drawLine(
             screenWidth.toFloat() / 4,
             0f,
@@ -241,13 +258,18 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         )
     }
 
+    /**
+     * drawScore dibuja la puntuación en el Canvas.
+     */
     fun drawScore(canvas: Canvas) {
-        // refresh score
+        // Actualizar puntuación
         canvas.drawText(score.toString(), screenWidth / 2 - scoreSize / 2, scoreSize, scorePaint)
     }
 
+    /**
+     * onTouchEvent maneja los eventos táctiles para interactuar con las tiles.
+     */
     override fun onTouchEvent(event: MotionEvent): Boolean {
-
         event.actionMasked.let { action ->
             if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN) {
                 event.actionIndex.let { index ->
@@ -270,7 +292,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
                                 }
                                 break
                             } else if (!tile.pressed && touchedY < tile.endY && touchedY > tile.startY) {
-                                // pressed wrong place
+                                // Presionó en el lugar equivocado
                                 tappedWrongTile = when {
                                     (touchedX < screenWidth / 4) -> 0
                                     (touchedX < screenWidth / 2) -> 1
