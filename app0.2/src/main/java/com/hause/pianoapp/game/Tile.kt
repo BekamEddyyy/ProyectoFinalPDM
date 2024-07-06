@@ -9,12 +9,11 @@ import com.tayyar.tiletap.game.GameView.Companion.screenHeight
 import kotlin.math.roundToInt
 
 /**
- * Tile Class.
- * It goes from top to bottom
- * Purpose of the game is to press the tile
+ * Clase Tile.
+ * Representa una tile que se mueve de arriba a abajo.
+ * El propósito del juego es presionar las tiles.
  */
-
-class Tile(blackPaint : Paint, private var pressedTileColor: Paint, private var redPaint: Paint, row : Int) {
+class Tile(blackPaint: Paint, private var pressedTileColor: Paint, private var redPaint: Paint, row: Int) {
 
     companion object {
         var speed = 30.0
@@ -34,27 +33,25 @@ class Tile(blackPaint : Paint, private var pressedTileColor: Paint, private var 
 
     private var tileColor = blackPaint
 
-
     init {
-        startX = row * (screenWidth/4)
-        startY = -screenHeight/4
-        endX = screenWidth/4 + startX
-        endY = screenHeight/4 + startY
+        startX = row * (screenWidth / 4)
+        startY = -screenHeight / 4
+        endX = screenWidth / 4 + startX
+        endY = screenHeight / 4 + startY
     }
 
     /**
-     * Draws the object on to the canvas.
+     * Dibuja la tile en el canvas.
      */
     fun draw(canvas: Canvas) {
         canvas.drawRect(Rect(startX, startY, endX, endY), tileColor)
     }
 
     /**
-     * update properties for the game object
+     * Actualiza las propiedades de la tile.
      */
     fun update(frameNo: Int) {
-
-        //stop the tile if it reaches the end
+        // Detiene la tile si alcanza el final
         if (false) {
             tileColor = redPaint
             outOfBounds = true
@@ -72,11 +69,14 @@ class Tile(blackPaint : Paint, private var pressedTileColor: Paint, private var 
         }
         startY += (speed.roundToInt())
         endY += (speed.roundToInt())
-
     }
 
-    fun checkTouch (x: Float, y: Float) : Boolean {
-        if (x > startX - screenWidth/30 && x < endX + screenWidth/30 && y < endY && y > startY && !pressed) {
+    /**
+     * Verifica si la tile ha sido presionada.
+     * @return True si la tile fue presionada, False en caso contrario.
+     */
+    fun checkTouch(x: Float, y: Float): Boolean {
+        if (x > startX - screenWidth / 30 && x < endX + screenWidth / 30 && y < endY && y > startY && !pressed) {
             tileColor = pressedTileColor
             GameView.score++
             pressed = true
@@ -84,5 +84,4 @@ class Tile(blackPaint : Paint, private var pressedTileColor: Paint, private var 
         }
         return false
     }
-
 }
